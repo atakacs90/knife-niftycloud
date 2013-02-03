@@ -259,7 +259,10 @@ class Chef
       end
 
       def image
-        @image ||= connection.describe_images(locate_config_value(:image_id))
+        params = {'Action' => 'DescribeImages'}
+        params.merge!(connection.send(:pathlist, "ImageId", locate_config_value(:image_id)))
+        @image = connection.response_generator(params)
+        # @image ||= connection.describe_images(locate_config_value(:image_id))
       end
 
       def validate!
@@ -273,6 +276,7 @@ class Chef
       end
 
       def create_server_def
+        p 'create  server def'
         server_def = {
           :image_id => locate_config_value(:image_id),
           :key_name => Chef::Config[:knife][:ssh_key_name],
