@@ -21,7 +21,7 @@ require 'chef/knife/niftycloud_base'
 
 class Chef
   class Knife
-    class NiftycloudServerRun < Knife
+    class NiftycloudServerCreate < Knife
 
       include Knife::NiftycloudBase
 
@@ -29,30 +29,30 @@ class Chef
         require 'NIFTY'
         require 'readline'
         require 'chef/json_compat'
-        # require 'chef/knife/bootstrap'
-        # Chef::Knife::Bootstrap.load_deps
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
       end
 
-      banner "knife niftycloud server run (options)"
+      banner "knife niftycloud server create (options)"
 
       attr_accessor :initial_sleep_delay
       attr_reader :server
 
-      # option :instance_type,
-      #   :short => "-it INSTANCE_TYPE",
-      #   :long => "--instance-type INSTANCE_TYPE",
-      #   :description => "The Instance Type of server (small2, medium4, etc)",
-      #   :proc => Proc.new { |it| Chef::Config[:knife][:instance_type] = it }
+      option :instance_type,
+        :short => "-it INSTANCE_TYPE",
+        :long => "--instance-type INSTANCE_TYPE",
+        :description => "The Instance Type of server (small2, medium4, etc)",
+        :proc => Proc.new { |it| Chef::Config[:knife][:instance_type] = it }
 
       option :image_id,
         :short => "-im IMAGE_ID",
         :long => "--image-id IMAGE_ID",
         :description => "The Image ID of server(14, 21, etc)"
 
-      # option :firewall,
-      #   :short => "-f FIREWALL",
-      #   :long => "--firewall X,Y,Z",
-      #   :description => "The firewall for this server"
+      option :firewall,
+        :short => "-f FIREWALL",
+        :long => "--firewall X,Y,Z",
+        :description => "The firewall for this server"
 
       option :chef_node_name,
         :short => "-N NAME",
@@ -88,31 +88,31 @@ class Chef
         :long => "--identity-file IDENTITY_FILE",
         :description => "The SSH identity file used for authentication"
 
-      # option :accounting_type,
-      #   :short => "-AT ACCOUNTING_TYPE",
-      #   :long => "--accounting-type ACCOUNTING_TYPE",
-      #   :description => "The Nifty Cloud ACCOUNTING_TYPE(monthly=1, cap=2)",
-      #   :proc => Proc.new { |at| Chef::Config[:knife][:accounting_type] = at }
+      option :accounting_type,
+        :short => "-AT ACCOUNTING_TYPE",
+        :long => "--accounting-type ACCOUNTING_TYPE",
+        :description => "The Nifty Cloud ACCOUNTING_TYPE(monthly=1, cap=2)",
+        :proc => Proc.new { |at| Chef::Config[:knife][:accounting_type] = at }
 
-      # option :ip_type,
-      #   :short => "-IP IP_TYPE",
-      #   :long => "--ip-type IP_TYPE",
-      #   :description => "The Nifty Cloud IP_TYPE(static,dynamic)"
+      option :ip_type,
+        :short => "-IP IP_TYPE",
+        :long => "--ip-type IP_TYPE",
+        :description => "The Nifty Cloud IP_TYPE(static,dynamic)"
 
-      # option :prerelease,
-      #   :long => "--prerelease",
-      #   :description => "Install the pre-release chef gems"
+      option :prerelease,
+        :long => "--prerelease",
+        :description => "Install the pre-release chef gems"
 
-      # option :bootstrap_version,
-      #   :long => "--bootstrap-version VERSION",
-      #   :description => "The version of Chef to install",
-      #   :proc => Proc.new { |v| Chef::Config[:knife][:bootstrap_version] = v }
+      option :bootstrap_version,
+        :long => "--bootstrap-version VERSION",
+        :description => "The version of Chef to install",
+        :proc => Proc.new { |v| Chef::Config[:knife][:bootstrap_version] = v }
 
-      # option :distro,
-      #   :short => "-d DISTRO",
-      #   :long => "--distro DISTRO",
-      #   :description => "Bootstrap a distro using a template; default is 'chef-full'",
-      #   :proc => Proc.new { |d| Chef::Config[:knife][:distro] = d }
+      option :distro,
+        :short => "-d DISTRO",
+        :long => "--distro DISTRO",
+        :description => "Bootstrap a distro using a template; default is 'chef-full'",
+        :proc => Proc.new { |d| Chef::Config[:knife][:distro] = d }
 
       option :template_file,
         :long => "--template-file TEMPLATE",
@@ -169,19 +169,19 @@ class Chef
       def run
         $stdout.sync = true
 
-        # validate!
+        validate!
 
-        # server_def = create_server_def
-        @response = connection.run_instances(create_server_def)
-        @server = @response.instancesSet.item.first
+        server_def = create_server_def
+        # @response = connection.run_instances(create_server_def)
+        # @server = @response.instancesSet.item.first
+        # state = @server.instanceState.name
+        # while state != 'running'
+        #   puts "."
+        @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
+        @server = @response.reservationSet.item.first.instancesSet.item.first
         state = @server.instanceState.name
-        while state != 'running'
-          puts "."
-          @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
-          @server = @response.reservationSet.item.first.instancesSet.item.first
-          state = @server.instanceState.name
         #   sleep 5
-        end
+        # end
 
         msg_pair("Server Name", @server.instanceId)
         msg_pair("Instance Type", @server.instanceType)
@@ -256,26 +256,25 @@ class Chef
         # knife-bootstrap
         Chef::Config[:knife][:hints] ||= {}
         Chef::Config[:knife][:hints]["nifty-cloud"] ||= {}
-        p 'run!'
         bootstrap
       end
 
-      # def image
-      #   params = {'Action' => 'DescribeImages'}
-      #   params.merge!(connection.send(:pathlist, "ImageId", locate_config_value(:image_id)))
-      #   @image = connection.response_generator(params)
-      #   # @image ||= connection.describe_images(locate_config_value(:image_id))
-      # end
+      def image
+        params = {'Action' => 'DescribeImages'}
+        params.merge!(connection.send(:pathlist, "ImageId", locate_config_value(:image_id)))
+        @image = connection.response_generator(params)
+        # @image ||= connection.describe_images(locate_config_value(:image_id))
+      end
 
-      # def validate!
+      def validate!
 
-      #   super([:ssh_key_name, :nifty_cloud_access_key, :nifty_cloud_secret_key])
+        super([:ssh_key_name, :nifty_cloud_access_key, :nifty_cloud_secret_key])
 
-      #   if image.nil?
-      #     ui.error("You have not provided a valid image value.  Please note the short option for this value recently changed from '-i' to '-I'.")
-      #     exit 1
-      #   end
-      # end
+        if image.nil?
+          ui.error("You have not provided a valid image value.  Please note the short option for this value recently changed from '-i' to '-I'.")
+          exit 1
+        end
+      end
 
       def create_server_def
         p 'create  server def'
