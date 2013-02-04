@@ -21,7 +21,7 @@ require 'chef/knife/niftycloud_base'
 
 class Chef
   class Knife
-    class NiftycloudServerCreate < Knife
+    class NiftycloudServerRun < Knife
 
       include Knife::NiftycloudBase
 
