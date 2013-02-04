@@ -44,10 +44,10 @@ class Chef
       #   :description => "The Instance Type of server (small2, medium4, etc)",
       #   :proc => Proc.new { |it| Chef::Config[:knife][:instance_type] = it }
 
-      # option :image_id,
-      #   :short => "-im IMAGE_ID",
-      #   :long => "--image-id IMAGE_ID",
-      #   :description => "The Image ID of server(14, 21, etc)"
+      option :image_id,
+        :short => "-im IMAGE_ID",
+        :long => "--image-id IMAGE_ID",
+        :description => "The Image ID of server(14, 21, etc)"
 
       # option :firewall,
       #   :short => "-f FIREWALL",
