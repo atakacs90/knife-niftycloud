@@ -208,7 +208,7 @@ class Chef
           puts("done")
         }
 
-        # bootstrap_for_node(@server,ssh_ip_address).run
+        bootstrap_for_node(@server,ssh_ip_address).run
 
         puts "\n"
         msg_pair("Server Name", @server.instanceId)
