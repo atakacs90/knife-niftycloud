@@ -171,17 +171,17 @@ class Chef
 
         # validate!
 
-        server_def = create_server_def
-        # @response = connection.run_instances(create_server_def)
-        # @server = @response.instancesSet.item.first
-        # state = @server.instanceState.name
-        # while state != 'running'
-          # puts "."
-        @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
-        @server = @response.reservationSet.item.first.instancesSet.item.first
+        # server_def = create_server_def
+        @response = connection.run_instances(create_server_def)
+        @server = @response.instancesSet.item.first
         state = @server.instanceState.name
+        while state != 'running'
+          puts "."
+          @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
+          @server = @response.reservationSet.item.first.instancesSet.item.first
+          state = @server.instanceState.name
         #   sleep 5
-        # end
+        end
 
         msg_pair("Server Name", @server.instanceId)
         msg_pair("Instance Type", @server.instanceType)
