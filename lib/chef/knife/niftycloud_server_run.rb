@@ -171,14 +171,15 @@ class Chef
 
         # validate!
 
+        server_def = create_server_def
         # @response = connection.run_instances(create_server_def)
         # @server = @response.instancesSet.item.first
         # state = @server.instanceState.name
         # while state != 'running'
           # puts "."
-          @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
-          @server = @response.reservationSet.item.first.instancesSet.item.first
-          state = @server.instanceState.name
+        @response = connection.describe_instances(:instance_id => locate_config_value(:chef_node_name))
+        @server = @response.reservationSet.item.first.instancesSet.item.first
+        state = @server.instanceState.name
         #   sleep 5
         # end
 
@@ -255,6 +256,7 @@ class Chef
         # knife-bootstrap
         Chef::Config[:knife][:hints] ||= {}
         Chef::Config[:knife][:hints]["nifty-cloud"] ||= {}
+        p 'run!'
         bootstrap
       end
 
@@ -275,22 +277,22 @@ class Chef
       #   end
       # end
 
-      # def create_server_def
-      #   p 'create  server def'
-      #   server_def = {
-      #     :image_id => locate_config_value(:image_id),
-      #     :key_name => Chef::Config[:knife][:ssh_key_name],
-      #     :security_group => locate_config_value(:firewall),
-      #     :instance_type => locate_config_value(:instance_type),
-      #     :disable_api_termination => false,
-      #     :accounting_type => locate_config_value(:accounting_type),
-      #     :instance_id => locate_config_value(:chef_node_name),
-      #     :admin       => locate_config_value(:ssh_user),
-      #     :password    => locate_config_value(:ssh_password),
-      #     :ip_type     => locate_config_value(:ip_type)
-      #   }
-      #   server_def
-      # end
+      def create_server_def
+        p 'create  server def'
+        server_def = {
+          :image_id => locate_config_value(:image_id),
+          :key_name => Chef::Config[:knife][:ssh_key_name],
+          :security_group => locate_config_value(:firewall),
+          :instance_type => locate_config_value(:instance_type),
+          :disable_api_termination => false,
+          :accounting_type => locate_config_value(:accounting_type),
+          :instance_id => locate_config_value(:chef_node_name),
+          :admin       => locate_config_value(:ssh_user),
+          :password    => locate_config_value(:ssh_password),
+          :ip_type     => locate_config_value(:ip_type)
+        }
+        server_def
+      end
     end
   end
 end
