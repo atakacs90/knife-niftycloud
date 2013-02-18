@@ -20,6 +20,7 @@ fi
 gem update --system
 gem update
 gem install ohai --no-rdoc --no-ri --verbose
+gem install net-ssh -v 2.6.5 --no-ri --no-rdoc
 gem install chef --no-rdoc --no-ri --verbose <%= bootstrap_version_string %>
 
 mkdir -p /etc/chef
